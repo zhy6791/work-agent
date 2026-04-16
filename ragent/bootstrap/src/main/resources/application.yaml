@@ -120,13 +120,13 @@ ai:
         embedding: /api/embed
     bailian:
       url: https://dashscope.aliyuncs.com
-      api-key: sk-3c3b400e1d0f4162842142ed54dc116d
+      api-key: os.getenv("DASHSCOPE_API_KEY")
       endpoints:
         chat: /compatible-mode/v1/chat/completions
         rerank: /api/v1/services/rerank/text-rerank/text-rerank
     siliconflow:
       url: https://api.siliconflow.cn
-      api-key: sk-svtxkdbbuatlhukaeevnkwbkmfmddxvairtkoueebbmmigha
+      api-key: os.getenv("siliconflow_API_KEY")
       endpoints:
         chat: /v1/chat/completions
         embedding: /v1/embeddings
