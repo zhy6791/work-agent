@@ -1,0 +1,205 @@
+server:
+  port: 9090
+  servlet:
+    context-path: /api/ragent
+
+spring:
+  application:
+    name: ragent${unique-name:}-service
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://127.0.0.1:5432/ragent?client_encoding=UTF8
+    hikari:
+      connection-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      pool-name: RagentHikariPool
+
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: 123456
+
+rocketmq:
+  name-server: 127.0.0.1:9876
+  producer:
+    group: ragent-producer${unique-name:}_pg
+    send-message-timeout: 2000
+
+milvus:
+  uri: http://localhost:19530
+
+rag:
+  vector:
+    type: pg  # 可选 milvus / pg
+
+  default:
+    collection-name: rag_default_store
+    dimension: 1536
+    metric-type: COSINE
+
+  query-rewrite:
+    enabled: true
+    max-history-messages: 4
+    max-history-chars: 500
+
+  rate-limit:
+    global:
+      enabled: true
+      max-concurrent: 1
+      max-wait-seconds: 3
+      lease-seconds: 30
+      poll-interval-ms: 200
+
+  memory:
+    # 会话记忆配置
+    # 保留原文的最近对话轮数（user+assistant 视为一轮），超出部分将被截断
+    history-keep-turns: 4
+    # 触发对话摘要的轮数阈值，当总轮次达到此值时开始生成摘要
+    summary-start-turns: 5
+    # 是否启用对话记忆压缩功能，开启后自动将历史对话压缩为摘要
+    summary-enabled: true
+    # 缓存过期时间（分钟），控制会话数据在缓存中的存活时长
+    ttl-minutes: 60
+    # 摘要最大字数限制，控制生成的对话摘要长度上限
+    summary-max-chars: 200
+    # 会话标题最大长度（字符数），用于自动生成会话标题时的约束
+    title-max-length: 30
+
+
+  semaphore:
+    document-upload:
+      name: rag:document:upload
+      max-concurrent: 10
+      max-wait-seconds: 5
+      lease-seconds: 300
+
+  knowledge:
+    schedule:
+      scan-delay-ms: 10000
+      lock-seconds: 900
+      batch-size: 20
+      min-interval-seconds: 60
+
+  mcp:
+    servers:
+      - name: default
+        url: http://localhost:9099
+
+  search:
+    channels:
+      vector-global:
+        confidence-threshold: 0.6
+        top-k-multiplier: 3
+      intent-directed:
+        min-intent-score: 0.4
+        top-k-multiplier: 2
+
+  trace:
+    enabled: true
+    max-error-length: 1000
+
+ai:
+  providers:
+    ollama:
+      url: http://localhost:11434
+      endpoints:
+        chat: /api/chat
+        embedding: /api/embed
+    bailian:
+      url: https://dashscope.aliyuncs.com
+      api-key: sk-3c3b400e1d0f4162842142ed54dc116d
+      endpoints:
+        chat: /compatible-mode/v1/chat/completions
+        rerank: /api/v1/services/rerank/text-rerank/text-rerank
+    siliconflow:
+      url: https://api.siliconflow.cn
+      api-key: sk-svtxkdbbuatlhukaeevnkwbkmfmddxvairtkoueebbmmigha
+      endpoints:
+        chat: /v1/chat/completions
+        embedding: /v1/embeddings
+
+  selection:
+    failure-threshold: 2
+    open-duration-ms: 30000
+
+  stream:
+    message-chunk-size: 1
+
+  chat:
+    default-model: qwen3-max
+    deep-thinking-model: qwen3-max
+    candidates:
+      - id: qwen-plus
+        provider: bailian
+        model: qwen-plus-latest
+        priority: 1
+      - id: qwen3-max
+        provider: bailian
+        model: qwen3-max
+        supports-thinking: true
+        priority: 3
+      - id: glm-4.7
+        provider: siliconflow
+        model: Pro/zai-org/GLM-4.7
+        supports-thinking: true
+        priority: 0
+      - id: qwen3-local
+        provider: ollama
+        model: qwen3:8b-fp16
+        priority: 2
+
+  embedding:
+    default-model: qwen-emb-8b
+    candidates:
+      - id: qwen-emb-8b
+        provider: siliconflow
+        model: Qwen/Qwen3-Embedding-8B
+        dimension: ${rag.default.dimension}
+        priority: 1
+      - id: qwen-emb-local
+        provider: ollama
+        model: qwen3-embedding:8b-fp16
+        dimension: ${rag.default.dimension}
+        priority: 2
+
+  rerank:
+    default-model: qwen3-rerank
+    candidates:
+      - id: qwen3-rerank
+        provider: bailian
+        model: qwen3-rerank
+        priority: 1
+      - id: rerank-noop
+        provider: noop
+        model: noop
+        priority: 100
+
+rustfs:
+  url: http://localhost:9000
+  access-key-id: rustfsadmin
+  secret-access-key: rustfsadmin
+
+sa-token:
+  token-name: Authorization
+  timeout: 2592000
+  is-concurrent: true
+  is-share: false
+  token-style: simple-uuid
+  is-log: false
+  is-print: false
+
+app:
+  demo-mode: false

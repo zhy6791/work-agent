@@ -1,0 +1,8 @@
+graph TD
+    A[application.yaml<br/>rag.memory.*] --> B[MemoryProperties<br/>@ConfigurationProperties]
+    B --> C1[JdbcConversationMemorySummaryService<br/>摘要压缩逻辑]
+    B --> C2[JdbcConversationMemoryStore<br/>历史消息管理]
+    B --> C3[ChatQueueLimiter<br/>队列限流]
+    B --> C4[ConversationServiceImpl<br/>会话管理]
+    B --> C5[RAGSettingsController<br/>配置暴露]
+    B --> C6[MemoryConfigValidator<br/>配置校验]
